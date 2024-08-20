@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PROGEN SA GESTÃO E CONTROLE</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .tabs {
+            margin-bottom: 20px;
+        }
+        .tab-buttons {
+            display: flex;
+            border-bottom: 2px solid #ddd;
+            margin-bottom: 10px;
+        }
+        .tab-button {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            background: #e0e0e0;
+            border: 1px solid #ddd;
+            border-bottom: none;
+        }
+        .tab-button.active {
+            background: #fff;
+            border-color: #ddd #ddd #fff #ddd;
+            font-weight: bold;
+        }
+        .tab-content {
+            display: none;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-top: none;
+            background: #fff;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 10px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007BFF;
+            color: #fff;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="login" class="container">
+        <h1>PROGEN SA GESTÃO E CONTROLE</h1>
+        <div class="form-group">
+            <label for="username">Usuário:</label>
+            <input type="text" id="username">
+        </div>
+        <div class="form-group">
+            <label for="password">Senha:</label>
+            <input type="password" id="password">
+        </div>
+        <button onclick="login()">Entrar</button>
+        <div id="loginError" style="color: red; text-align: center; margin-top: 10px;"></div>
+    </div>
+
+    <div id="main" class="container" style="display: none;">
+        <button onclick="reloadPage()">Recarregar Página</button>
+        <div class="tabs">
+            <div class="tab-buttons">
+                <div class="tab-button active" onclick="showTab('materiaisTab')">Materiais</div>
+                <div class="tab-button" onclick="showTab('funcionariosTab')">Funcionários</div>
+                <div class="tab-button" onclick="showTab('saldoTab')">Saldo</div>
+                <div class="tab-button" onclick="showTab('entradaTab')">Entrada</div>
+                <div class="tab-button" onclick="showTab('saidaTab')">Saída</div>
+                <div class="tab-button" onclick="showTab('devolucaoTab')">Devolução</div>
+                <div class="tab-button" onclick="showTab('historicoTab')">Histórico</div>
+            </div>
+            <div id="materiaisTab" class="tab-content active">
+                <h2>Cadastrar Materiais</h2>
+                <div class="form-group">
+                    <label for="codigoMaterial">Código:</label>
+                    <input type="text" id="codigoMaterial">
+                </div>
+                <div class="form-group">
+                    <label for="descricaoMaterial">Descrição:</label>
+                    <input type="text" id="descricaoMaterial">
+                </div>
+                <button onclick="saveMaterial()">Salvar</button>
+                <table id="materiaisTable">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Descrição</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div id="funcionariosTab" class="tab-content">
+                <h2>Cadastro de Funcionários</h2>
+                <div class="form-group">
+                    <label for="matriculaFuncionario">Matrícula:</label>
+                    <input type="text" id="matriculaFuncionario">
+                </div>
+                <div class="form-group">
+                    <label for="nomeFuncionario">Nome:</label>
+                    <input type="text" id="nomeFuncionario">
+                </div>
+                <button onclick="saveFuncionario()">Salvar</button>
+                <table id="funcionariosTable">
+                    <thead>
+                        <tr>
+                            <th>Matrícula</th>
+                            <th>Nome</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div id="saldoTab" class="tab-content">
+                <h2>Saldo de Materiais</h2>
+                <div class="form-group">
+                    <label for="codigoSaldo">Código:</label>
+                    <input type="text" id="codigoSaldo" oninput="updateDescricaoSaldo()">
+                </div>
+                <div class="form-group">
+                    <label for="descricaoSaldo">Descrição:</label>
+                    <input type="text" id="descricaoSaldo" disabled>
+                </div>
+                <div class="form-group">
+                    <label for="quantidadeSaldo">Quantidade:</label>
+                    <input type="number" id="quantidadeSaldo">
+                </div>
+                <button onclick="saveSaldo()">Salvar</button>
+                <table id="saldoTable">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Descrição</th>
+                            <th>Quantidade</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div id="entradaTab" class="tab-content">
+                <h2>Entrada de Materiais</h2>
+                <div class="form-group">
+                    <label for="codigoEntrada">Código:</label>
+                    <input type="text" id="codigoEntrada" oninput="updateDescricaoEntrada()">
+                </div>
+                <div class="form-group">
+                    <label for="descricaoEntrada">Descrição:</label>
+                    <input type="text" id="descricaoEntrada" disabled>
+                </div>
+                <div class="form-group">
+                    <label for="quantidadeEntrada">Quantidade:</label>
+                    <input type="number" id="quantidadeEntrada">
+                </div>
+                <button onclick="saveEntrada()">Salvar</button>
+                <table id="entradaTable">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Descrição</th>
+                            <th>Quantidade</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div id="saidaTab" class="tab-content">
+                <h2>Saída de Materiais</h2>
+                <div class="form-group">
+                    <label for="dataSaida">Data:</label>
+                    <input type="date" id="dataSaida">
+                </div>
+                <div class="form-group">
+                    <label for="codigoSaida">Código:</label>
+                    <input type="text" id="codigoSaida" oninput="updateDescricaoSaida()">
+                </div>
+                <div class="form-group">
+                    <label for="descricaoSaida">Descrição:</label>
+                    <input type="text" id="descricaoSaida" disabled>
+                </div>
+                <div class="form-group">
+                    <label for="quantidadeSaida">Quantidade:</label>
+                    <input type="number" id="quantidadeSaida">
+                </div>
+                <div class="form-group">
+                    <label for="matriculaSaida">Matrícula:</label>
+                    <input type="text" id="matriculaSaida">
+                </div>
+                <div class="form-group">
+                    <label for="nomeSaida">Nome:</label>
+                    <input type="text" id="nomeSaida">
+                </div>
+                <div class="form-group">
+                    <label for="setorSaida">Setor:</label>
+                    <input type="text" id="setorSaida">
+                </div>
+                <button onclick="saveSaida()">Salvar</button>
+                <table id="saidaTable">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Código</th>
+                            <th>Descrição</th>
+                            <th>Quantidade</th>
+                            <th>Matrícula</th>
+                            <th>Nome</th>
+                            <th>Setor</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div id="devolucaoTab" class="tab-content">
+                <h2>Devolução de Materiais</h2>
+                <div class="form-group">
+                    <label for="codigoDevolucao">Código:</label>
+                    <input type="text" id="codigoDevolucao" oninput="updateDescricaoDevolucao()">
+                </div>
+                <div class="form-group">
+                    <label for="descricaoDevolucao">Descrição:</label>
+                    <input type="text" id="descricaoDevolucao" disabled>
+                </div>
+                <div class="form-group">
+                    <label for="quantidadeDevolucao">Quantidade:</label>
+                    <input type="number" id="quantidadeDevolucao">
+                </div>
+                <div class="form-group">
+                    <label for="observacaoDevolucao">Observação:</label>
+                    <textarea id="observacaoDevolucao"></textarea>
+                </div>
+                <button onclick="saveDevolucao()">Salvar</button>
+                <table id="devolucaoTable">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Descrição</th>
+                            <th>Quantidade</th>
+                            <th>Observação</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div id="historicoTab" class="tab-content">
+                <h2>Histórico de Saídas</h2>
+                <table id="historicoTable">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Descrição</th>
+                            <th>Quantidade</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username === 'Almoxarifado petropolis' && password === 'Pza23@Pp' ||
+                username === 'Almoxarifado teresopolis' && password === 'progentere' ||
+                username === 'Admin' && password === 'progen2131') {
+                document.getElementById('login').style.display = 'none';
+                document.getElementById('main').style.display = 'block';
+            } else {
+                document.getElementById('loginError').innerText = 'Usuário ou senha inválidos.';
+            }
+        }
+
+        function reloadPage() {
+            location.reload();
+        }
+
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.querySelector(`.tab-button[onclick="showTab('${tabId}')"]`).classList.add('active');
+        }
+
+        function saveMaterial() {
+            const codigo = document.getElementById('codigoMaterial').value;
+            const descricao = document.getElementById('descricaoMaterial').value;
+            if (!codigo || !descricao) {
+                alert('Preencha todos os campos.');
+                return;
+            }
+            const materiais = JSON.parse(localStorage.getItem('materiais') || '[]');
+            materiais.push({ codigo, descricao });
+            localStorage.setItem('materiais', JSON.stringify(materiais));
+            loadMateriais();
+        }
+
+        function loadMateriais() {
+            const materiais = JSON.parse(localStorage.getItem('materiais') || '[]');
+            const tableBody = document.querySelector('#materiaisTable tbody');
+            tableBody.innerHTML = '';
+            materiais.forEach(({ codigo, descricao }) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${codigo}</td><td>${descricao}</td><td><div class="action-buttons"><button onclick="deleteMaterial('${codigo}')">Excluir</button></div></td>`;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function deleteMaterial(codigo) {
+            let materiais = JSON.parse(localStorage.getItem('materiais') || '[]');
+            materiais = materiais.filter(m => m.codigo !== codigo);
+            localStorage.setItem('materiais', JSON.stringify(materiais));
+            loadMateriais();
+        }
+
+        function saveFuncionario() {
+            const matricula = document.getElementById('matriculaFuncionario').value;
+            const nome = document.getElementById('nomeFuncionario').value;
+            if (!matricula || !nome) {
+                alert('Preencha todos os campos.');
+                return;
+            }
+            const funcionarios = JSON.parse(localStorage.getItem('funcionarios') || '[]');
+            funcionarios.push({ matricula, nome });
+            localStorage.setItem('funcionarios', JSON.stringify(funcionarios));
+            loadFuncionarios();
+        }
+
+        function loadFuncionarios() {
+            const funcionarios = JSON.parse(localStorage.getItem('funcionarios') || '[]');
+            const tableBody = document.querySelector('#funcionariosTable tbody');
+            tableBody.innerHTML = '';
+            funcionarios.forEach(({ matricula, nome }) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${matricula}</td><td>${nome}</td><td><div class="action-buttons"><button onclick="deleteFuncionario('${matricula}')">Excluir</button></div></td>`;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function deleteFuncionario(matricula) {
+            let funcionarios = JSON.parse(localStorage.getItem('funcionarios') || '[]');
+            funcionarios = funcionarios.filter(f => f.matricula !== matricula);
+            localStorage.setItem('funcionarios', JSON.stringify(funcionarios));
+            loadFuncionarios();
+        }
+
+        function saveSaldo() {
+            const codigo = document.getElementById('codigoSaldo').value;
+            const descricao = document.getElementById('descricaoSaldo').value;
+            const quantidade = document.getElementById('quantidadeSaldo').value;
+            if (!codigo || !descricao || quantidade === '') {
+                alert('Preencha todos os campos.');
+                return;
+            }
+            const saldos = JSON.parse(localStorage.getItem('saldos') || '[]');
+            const saldoIndex = saldos.findIndex(s => s.codigo === codigo);
+            if (saldoIndex >= 0) {
+                saldos[saldoIndex].descricao = descricao;
+                saldos[saldoIndex].quantidade = parseInt(quantidade, 10);
+            } else {
+                saldos.push({ codigo, descricao, quantidade: parseInt(quantidade, 10) });
+            }
+            localStorage.setItem('saldos', JSON.stringify(saldos));
+            loadSaldos();
+        }
+
+        function loadSaldos() {
+            const saldos = JSON.parse(localStorage.getItem('saldos') || '[]');
+            const tableBody = document.querySelector('#saldoTable tbody');
+            tableBody.innerHTML = '';
+            saldos.forEach(({ codigo, descricao, quantidade }) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${codigo}</td><td>${descricao}</td><td>${quantidade}</td><td><div class="action-buttons"><button onclick="deleteSaldo('${codigo}')">Excluir</button></div></td>`;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function deleteSaldo(codigo) {
+            let saldos = JSON.parse(localStorage.getItem('saldos') || '[]');
+            saldos = saldos.filter(s => s.codigo !== codigo);
+            localStorage.setItem('saldos', JSON.stringify(saldos));
+            loadSaldos();
+        }
+
+        function saveEntrada() {
+            const codigo = document.getElementById('codigoEntrada').value;
+            const descricao = document.getElementById('descricaoEntrada').value;
+            const quantidade = document.getElementById('quantidadeEntrada').value;
+            if (!codigo || !descricao || quantidade === '') {
+                alert('Preencha todos os campos.');
+                return;
+            }
+            const entradas = JSON.parse(localStorage.getItem('entradas') || '[]');
+            entradas.push({ codigo, descricao, quantidade: parseInt(quantidade, 10) });
+            localStorage.setItem('entradas', JSON.stringify(entradas));
+            updateSaldo();
+            loadEntradas();
+        }
+
+        function loadEntradas() {
+            const entradas = JSON.parse(localStorage.getItem('entradas') || '[]');
+            const tableBody = document.querySelector('#entradaTable tbody');
+            tableBody.innerHTML = '';
+            entradas.forEach(({ codigo, descricao, quantidade }) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${codigo}</td><td>${descricao}</td><td>${quantidade}</td><td><div class="action-buttons"><button onclick="deleteEntrada('${codigo}')">Excluir</button></div></td>`;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function deleteEntrada(codigo) {
+            let entradas = JSON.parse(localStorage.getItem('entradas') || '[]');
+            entradas = entradas.filter(e => e.codigo !== codigo);
+            localStorage.setItem('entradas', JSON.stringify(entradas));
+            loadEntradas();
+        }
+
+        function saveSaida() {
+            const data = document.getElementById('dataSaida').value;
+            const codigo = document.getElementById('codigoSaida').value;
+            const descricao = document.getElementById('descricaoSaida').value;
+            const quantidade = document.getElementById('quantidadeSaida').value;
+            const matricula = document.getElementById('matriculaSaida').value;
+            const nome = document.getElementById('nomeSaida').value;
+            const setor = document.getElementById('setorSaida').value;
+            if (!data || !codigo || !descricao || quantidade === '' || !matricula || !nome || !setor) {
+                alert('Preencha todos os campos.');
+                return;
+            }
+            const saídas = JSON.parse(localStorage.getItem('saídas') || '[]');
+            saídas.push({ data, codigo, descricao, quantidade: parseInt(quantidade, 10), matricula, nome, setor });
+            localStorage.setItem('saídas', JSON.stringify(saídas));
+            updateSaldoSaida();
+            loadSaidas();
+        }
+
+        function loadSaidas() {
+            const saídas = JSON.parse(localStorage.getItem('saídas') || '[]');
+            const tableBody = document.querySelector('#saidaTable tbody');
+            tableBody.innerHTML = '';
+            saídas.forEach(({ data, codigo, descricao, quantidade, matricula, nome, setor }) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${data}</td><td>${codigo}</td><td>${descricao}</td><td>${quantidade}</td><td>${matricula}</td><td>${nome}</td><td>${setor}</td><td><div class="action-buttons"><button onclick="deleteSaida('${codigo}')">Excluir</button></div></td>`;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function deleteSaida(codigo) {
+            let saídas = JSON.parse(localStorage.getItem('saídas') || '[]');
+            saídas = saídas.filter(s => s.codigo !== codigo);
+            localStorage.setItem('saídas', JSON.stringify(saídas));
+            loadSaidas();
+        }
+
+        function saveDevolucao() {
+            const codigo = document.getElementById('codigoDevolucao').value;
+            const descricao = document.getElementById('descricaoDevolucao').value;
+            const quantidade = document.getElementById('quantidadeDevolucao').value;
+            const observacao = document.getElementById('observacaoDevolucao').value;
+            if (!codigo || !descricao || quantidade === '' || !observacao) {
+                alert('Preencha todos os campos.');
+                return;
+            }
+            const devoluções = JSON.parse(localStorage.getItem('devoluções') || '[]');
+            devoluções.push({ codigo, descricao, quantidade: parseInt(quantidade, 10), observacao });
+            localStorage.setItem('devoluções', JSON.stringify(devoluções));
+            updateSaldo();
+            loadDevolucoes();
+        }
+
+        function loadDevolucoes() {
+            const devoluções = JSON.parse(localStorage.getItem('devoluções') || '[]');
+            const tableBody = document.querySelector('#devolucaoTable tbody');
+            tableBody.innerHTML = '';
+            devoluções.forEach(({ codigo, descricao, quantidade, observacao }) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${codigo}</td><td>${descricao}</td><td>${quantidade}</td><td>${observacao}</td><td><div class="action-buttons"><button onclick="deleteDevolucao('${codigo}')">Excluir</button></div></td>`;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function deleteDevolucao(codigo) {
+            let devoluções = JSON.parse(localStorage.getItem('devoluções') || '[]');
+            devoluções = devoluções.filter(d => d.codigo !== codigo);
+            localStorage.setItem('devoluções', JSON.stringify(devoluções));
+            loadDevolucoes();
+        }
+
+        function updateDescricaoSaldo() {
+            const codigo = document.getElementById('codigoSaldo').value;
+            const materiais = JSON.parse(localStorage.getItem('materiais') || '[]');
+            const material = materiais.find(m => m.codigo === codigo);
+            document.getElementById('descricaoSaldo').value = material ? material.descricao : '';
+        }
+
+        function updateDescricaoEntrada() {
+            const codigo = document.getElementById('codigoEntrada').value;
+            const materiais = JSON.parse(localStorage.getItem('materiais') || '[]');
+            const material = materiais.find(m => m.codigo === codigo);
+            document.getElementById('descricaoEntrada').value = material ? material.descricao : '';
+        }
+
+        function updateDescricaoSaida() {
+            const codigo = document.getElementById('codigoSaida').value;
+            const materiais = JSON.parse(localStorage.getItem('materiais') || '[]');
+            const material = materiais.find(m => m.codigo === codigo);
+            document.getElementById('descricaoSaida').value = material ? material.descricao : '';
+        }
+
+        function updateDescricaoDevolucao() {
+            const codigo = document.getElementById('codigoDevolucao').value;
+            const materiais = JSON.parse(localStorage.getItem('materiais') || '[]');
+            const material = materiais.find(m => m.codigo === codigo);
+            document.getElementById('descricaoDevolucao').value = material ? material.descricao : '';
+        }
+
+        function updateSaldo() {
+            const saldos = JSON.parse(localStorage.getItem('saldos') || '[]');
+            const entradas = JSON.parse(localStorage.getItem('entradas') || '[]');
+            entradas.forEach(({ codigo, quantidade }) => {
+                const saldo = saldos.find(s => s.codigo === codigo);
+                if (saldo) {
+                    saldo.quantidade += quantidade;
+                } else {
+                    saldos.push({ codigo, descricao: '', quantidade });
+                }
+            });
+            localStorage.setItem('saldos', JSON.stringify(saldos));
+            loadSaldos();
+        }
+
+        function updateSaldoSaida() {
+            const saldos = JSON.parse(localStorage.getItem('saldos') || '[]');
+            const saídas = JSON.parse(localStorage.getItem('saídas') || '[]');
+            saídas.forEach(({ codigo, quantidade }) => {
+                const saldo = saldos.find(s => s.codigo === codigo);
+                if (saldo) {
+                    saldo.quantidade -= quantidade;
+                }
+            });
+            localStorage.setItem('saldos', JSON.stringify(saldos));
+            loadSaldos();
+        }
+
+        function loadHistorico() {
+            const saídas = JSON.parse(localStorage.getItem('saídas') || '[]');
+            const tableBody = document.querySelector('#historicoTable tbody');
+            tableBody.innerHTML = '';
+            saídas.forEach(({ codigo, descricao, quantidade }) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${codigo}</td><td>${descricao}</td><td>${quantidade}</td><td><div class="action-buttons"><button onclick="deleteHistorico('${codigo}')">Excluir</button></div></td>`;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function deleteHistorico(codigo) {
+            let saídas = JSON.parse(localStorage.getItem('saídas') || '[]');
+            saídas = saídas.filter(s => s.codigo !== codigo);
+            localStorage.setItem('saídas', JSON.stringify(saídas));
+            loadHistorico();
+        }
+
+        // Initialize
+        loadMateriais();
+        loadFuncionarios();
+        loadSaldos();
+        loadEntradas();
+        loadSaidas();
+        loadDevolucoes();
+        loadHistorico();
+    </script>
+</body>
+</html>
